@@ -11,7 +11,11 @@ import java.util.Objects;
 
 public class CalculatorMainListener extends CalculatorBaseListener{
 
+    //Utworzylam nowa liste newlist na ktorej wykonuja sie dzialania ktore maja pierwszenstwo czyli np mnozenie i dzielenie
+    //a wyniki tych dzialan sa dodawane do numbers do zsumowania
+
     Deque<Double> numbers = new ArrayDeque<>();
+    Deque<Double> newlist = new ArrayDeque<>();
 
     @Override
     public void exitIntegralExpression(CalculatorParser.IntegralExpressionContext ctx) {
@@ -24,18 +28,17 @@ public class CalculatorMainListener extends CalculatorBaseListener{
     }
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
-        System.out.println("exitEveryRule:"+ctx.getText());
         super.exitEveryRule(ctx);
     }
 
     @Override
     public void exitExpression(CalculatorParser.ExpressionContext ctx) {
-        Double value = numbers.pollLast();
+        Double value = numbers.pop();
         for (int i = 1; i< ctx.getChildCount(); i = i+2){
             if(Objects.equals(ctx.getChild(i).getText(), "+")){
-                value = value + numbers.pollLast();
+                value = value + numbers.pop();
             } else {
-                value =  numbers.pollLast() - value;
+                value =  value - numbers.pop() ;
             }
         }
         numbers.add(value);
@@ -46,11 +49,12 @@ public class CalculatorMainListener extends CalculatorBaseListener{
     public void exitMultiplyingExpression(CalculatorParser.MultiplyingExpressionContext ctx) {
         Double value = numbers.pollLast();
         for (int i = 1; i< ctx.getChildCount(); i = i+2){
+            newlist.add(numbers.pollLast());
             if(Objects.equals(ctx.getChild(i).getText(), "*")){
-                value = value * numbers.pollLast();
+                value = value * newlist.pop();
             } else if(Objects.equals(ctx.getChild(i).getText(), "/")) {
-                if(numbers.getLast() == 0) throw new ArithmeticException("Nie można dzielić przez 0");
-                value =  numbers.pollLast() / value;
+                if(newlist.getLast() == 0) throw new ArithmeticException("Nie można dzielić przez 0");
+                value =  newlist.pop() / value;
             }
         }
         numbers.add(value);
@@ -75,7 +79,6 @@ public class CalculatorMainListener extends CalculatorBaseListener{
             numbers.add(value);
         }
         super.exitSqrtExpression(ctx);
-        System.out.println("exitSqrtExpression:"+ctx.getText()+" ; numbers:"+numbers);
     }
 
     private Double getResult(){
@@ -83,8 +86,10 @@ public class CalculatorMainListener extends CalculatorBaseListener{
     }
 
     public static void main(String[] args) throws Exception {
-       // CharStream charStreams = CharStreams.fromFileName("./example.txt");
-        Double result = calc("2-1");
+        // CharStream charStreams = CharStreams.fromFileName("./example.txt");
+        Double result = calc("1+2*2-3");
+        System.out.println("Result = " + result);
+        result = calc("1+2^2*3-sqrt4/5");
         System.out.println("Result = " + result);
     }
 
@@ -104,5 +109,4 @@ public class CalculatorMainListener extends CalculatorBaseListener{
         walker.walk(mainListener, tree);
         return mainListener.getResult();
     }
-
 }
