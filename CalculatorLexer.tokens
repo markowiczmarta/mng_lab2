@@ -1,0 +1,16 @@
+INT=1
+PLUS=2
+MINUS=3
+MULT=4
+DIV=5
+SQRT=6
+POW=7
+INTEGRAL=8
+WS=9
+'+'=2
+'-'=3
+'*'=4
+'/'=5
+'sqrt'=6
+'^'=7
+'cal'=8
